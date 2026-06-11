@@ -29,7 +29,7 @@ import torch
 import torch.nn.functional as F
 import hsl_embedding as hsl
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 FEAT_DIM = int(hsl.FEAT_DIM)                  # 27
 
 
@@ -43,14 +43,14 @@ class ZeroInput(torch.nn.Module):
     remaining channels are zero. dim must satisfy K*FEAT_DIM <= dim (K<=18 at dim=512).
     """
 
-    def __init__(self, K: int = 8, dim: int = 512):
+    def __init__(self, K: int = 8, dim: int = 512, tail: str = "pad"):
         super().__init__()
         if K * FEAT_DIM > dim:
             raise ValueError(f"K*{FEAT_DIM}={K*FEAT_DIM} exceeds dim={dim} (max K={dim//FEAT_DIM})")
-        self.K, self.dim = K, dim
-        self._emb = hsl.Embedding()           # exact tensor path (bit-identical to hsl.embed)
-        for p in self._emb.parameters():
-            p.requires_grad_(False)           # the substrate is frozen -- that is the point
+        if tail not in ("pad", "drop"):
+            raise ValueError("tail must be 'pad' (0x00-pad to slot boundary) or 'drop'")
+        self.K, self.dim, self.tail = K, dim, tail
+        self._emb = hsl.Embedding()           # exact tensor path, zero learned parameters (LUT buffers)
 
     @property
     def learned_parameters(self) -> int:
@@ -62,8 +62,13 @@ class ZeroInput(torch.nn.Module):
             return self._emb(ids)
 
     def forward(self, ids: torch.Tensor) -> torch.Tensor:
+        """[B, L] -> [B, ceil(L/K), dim]. tail='pad' (default) 0x00-pads the last partial slot
+        so NO bytes are silently lost; tail='drop' discards the L%K remainder (explicit opt-in)."""
         B, L = ids.shape
-        n = (L // self.K) * self.K
+        r = L % self.K
+        if r and self.tail == "pad":
+            ids = F.pad(ids, (0, self.K - r))                      # origin-byte pad, documented
+        n = (ids.shape[1] // self.K) * self.K
         f = self.features(ids[:, :n]).reshape(B, n // self.K, self.K * FEAT_DIM)
         return F.pad(f, (0, self.dim - f.shape[-1]))
 

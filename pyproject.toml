@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hsl-embedding-zero"
-version = "0.1.1"
+version = "0.1.2"
 description = "Feed bytes to a transformer with ZERO learned input parameters - the HSL byte-signal substrate replaces the embedding layer (no tokenizer, no embedding table, no learned projection)."
 readme = "README.md"
 requires-python = ">=3.9"
