@@ -1,0 +1,107 @@
+# hsl-embedding-zero
+
+**Feed bytes to a transformer with ZERO learned input parameters.**
+
+```bash
+pip install hsl-embedding-zero
+```
+
+```python
+import torch
+from hsl_embedding_zero import ZeroInput
+
+door = ZeroInput(K=8, dim=512)        # 0 learned parameters, no tokenizer, no vocab
+slots = door(byte_ids)                # [B, L] bytes -> [B, L//8, 512] attention slots
+stream = door.stream(byte_ids)        # per-byte path for AR output streams
+```
+
+## The idea
+
+Raw bytes fed directly into a transformer are known to fail — that is **why** learned
+embeddings exist: something has to lift discrete symbols into a usable geometry.
+
+This package tests the alternative: let a **frozen signal representation** do that lifting.
+The [HSL substrate](https://github.com/Woojiggun/hsl-embedding) (MIT, `pip install
+hsl-embedding`) maps every byte to 27 exact channels — change-rate (Gray-code Δ), Δ²,
+boundary, an exact 8-point Fourier transform, and phase — grounded in a lossless codec.
+If that representation already does the embedding's job, the learned front door should be
+removable:
+
+```
+bytes → HSL features (frozen 4.6 KB LUT) → fixed zero-pad → transformer
+```
+
+Channels enter **unmixed** — every feature keeps a fixed address (dim 0–7 is always Δ,
+17–24 always Fourier, …). The first learned combination happens inside attention, where it
+is trainable and inspectable, not at the door where it would be blind.
+
+## Measured (the table is the claim)
+
+Same lean decoder body (dim 512 / 8 layers-class), same 3-modality byte mix
+(text / video windows / audio-caption windows), same fixed 3000-step budget, same seed.
+Capacity-matched arms via `hsl_embedding.ablation`. Lower bits/byte = better.
+
+| input front door | text bpb | caption bpb | audio→caption binding gap | learned input params |
+|---|---|---|---|---|
+| **zero (this package)** | **2.483** | **1.503** | **+0.063** | **0** |
+| learned projection on HSL features | 2.457 | 1.329 | +0.057 | ~125k |
+| plain learned byte embedding (standard) | 2.848 | 2.532 | +0.080 | ~132k |
+
+- **Zero vs learned door: ≤1% text cost.** The learned input projection adds almost nothing
+  the signal didn't already carry.
+- **Zero vs standard learned byte embedding: +0.37 text bpb, +1.0 caption bpb in zero's
+  favor** at equal budget — the frozen substrate beats 132k trained parameters at the door.
+- **Binding gap** = extra caption bits/byte when the in-window audio is swapped for a wrong
+  one (cross-modal grounding measure). Zero matches the learned door.
+
+**Sequence halving holds quality — and flips the comparison.** With K=16 (16 bytes per
+attention slot — half the prefix positions, attention cost /4 on the input side):
+
+| K=16 front door | text bpb | caption bpb | binding gap |
+|---|---|---|---|
+| **zero** | 2.4815 | **1.4965** | **+0.042** |
+| learned projection | 2.4650 | 1.5398 | +0.031 |
+
+At K=16 zero is **ahead on caption and binding** (text within 0.7%) — the learned door's
+advantage shrinks as slots widen, while the zero door takes K up to 18 at dim 512
+**without adding a single parameter**. *(Trade-off, honestly: binding softens for both
+doors at K=16 vs K=8 — fine-grained cross-modal alignment prefers smaller slots.)*
+
+### Honest limits
+
+Fixed small budget (3000 steps), lean ~25M body, one consumer GPU; seed-0 table (multi-seed
+run in progress — numbers will be appended, not replaced). A learned embedding may close the
+gap with a longer schedule. The claim is **not** "embeddings are obsolete"; it is: *on this
+substrate, the learned front door is measurably unnecessary, and a standard learned byte
+embedding does not reach the substrate's quality at equal budget.* Reproduce or refute:
+the ablation kit ships in `hsl_embedding.ablation` (hsl / learned / random / permuted,
+capacity-matched).
+
+## Why this matters
+
+- **0 learned input parameters** — vs ~38M for a GPT-2-class token embedding table.
+- **No tokenizer** — any modality that is bytes (text, audio, raster, video windows) goes
+  through the same door; this is the input layer of the byte-native multimodal
+  [HoLo](https://github.com/Woojiggun/holo-hsl) line of work (59M, 3-stage curriculum,
+  [weights public](https://huggingface.co/ggunio/HoLo-6.5.1)).
+- **Deterministic & inspectable** — the representation cannot drift, leak, or overfit;
+  what enters the model is an exact, invertible signal description.
+- **K is free** — packing density (sequence length vs slot width) becomes a pure
+  architecture knob, not a new parameter budget.
+
+## API
+
+| call | shape | learned params |
+|---|---|---|
+| `ZeroInput(K, dim)(ids)` | `[B, L] → [B, L//K, dim]` | 0 |
+| `ZeroInput(K, dim).stream(ids)` | `[B, L] → [B, L, dim]` | 0 |
+| `ZeroInput(K, dim).features(ids)` | `[B, L] → [B, L, 27]` (raw substrate) | 0 |
+| `zero_input(b"raw bytes")` | one-call convenience | 0 |
+
+## Cite
+
+Jinhyun Woo, *HoLo: A Feasibility Study of Change-Rate-Based Multimodal Unification* —
+DOI: [10.5281/zenodo.20581805](https://doi.org/10.5281/zenodo.20581805). A release DOI for
+this package is minted via the GitHub–Zenodo integration (see repository sidebar).
+
+MIT © 2026 Jinhyun Woo — independent research, released on personal time.

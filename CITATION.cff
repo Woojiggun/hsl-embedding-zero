@@ -1,0 +1,14 @@
+﻿cff-version: 1.2.0
+title: "hsl-embedding-zero: zero learned input parameters for byte transformers"
+message: "If you use this software, please cite it."
+type: software
+authors:
+  - family-names: Woo
+    given-names: Jinhyun
+    orcid: "https://orcid.org/0009-0002-3273-1169"
+license: MIT
+repository-code: "https://github.com/Woojiggun/hsl-embedding-zero"
+related-identifiers:
+  - identifier: "10.5281/zenodo.20581805"
+    relation: isSupplementTo
+    type: doi
