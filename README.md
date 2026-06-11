@@ -1,5 +1,9 @@
 # hsl-embedding-zero
 
+[![PyPI](https://img.shields.io/pypi/v/hsl-embedding-zero.svg)](https://pypi.org/project/hsl-embedding-zero/)
+[![DOI](https://zenodo.org/badge/1266175250.svg)](https://doi.org/10.5281/zenodo.20643551)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **Feed bytes to a transformer with ZERO learned input parameters.**
 
 ```bash
@@ -111,8 +115,10 @@ capacity-matched).
 
 ## Cite
 
-Jinhyun Woo, *HoLo: A Feasibility Study of Change-Rate-Based Multimodal Unification* —
-DOI: [10.5281/zenodo.20581805](https://doi.org/10.5281/zenodo.20581805). A release DOI for
-this package is minted via the GitHub–Zenodo integration (see repository sidebar).
+Software (this package, all versions): DOI [10.5281/zenodo.20643551](https://doi.org/10.5281/zenodo.20643551).
+Companion paper: Jinhyun Woo, *A Feasibility Study of Change-Rate-Based Multimodal Unification* —
+DOI [10.5281/zenodo.20581805](https://doi.org/10.5281/zenodo.20581805). The substrate itself is
+citable separately: [10.5281/zenodo.20628599](https://doi.org/10.5281/zenodo.20628599)
+(`hsl-embedding`).
 
 MIT © 2026 Jinhyun Woo — independent research, released on personal time.

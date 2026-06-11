@@ -7,8 +7,17 @@ authors:
     given-names: Jinhyun
     orcid: "https://orcid.org/0009-0002-3273-1169"
 license: MIT
+version: 0.1.1
+date-released: 2026-06-11
+doi: 10.5281/zenodo.20643551
 repository-code: "https://github.com/Woojiggun/hsl-embedding-zero"
-related-identifiers:
-  - identifier: "10.5281/zenodo.20581805"
-    relation: isSupplementTo
-    type: doi
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20643551
+    description: "Software concept DOI (all versions — cite this for the code)"
+  - type: doi
+    value: 10.5281/zenodo.20581805
+    description: "Companion paper (feasibility study)"
+  - type: doi
+    value: 10.5281/zenodo.20628599
+    description: "The HSL substrate package (hsl-embedding)"
