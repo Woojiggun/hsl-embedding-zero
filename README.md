@@ -47,25 +47,36 @@ Capacity-matched arms via `hsl_embedding.ablation`. Lower bits/byte = better.
 | learned projection on HSL features | 2.457 | 1.329 | +0.057 | ~125k |
 | plain learned byte embedding (standard) | 2.848 | 2.532 | +0.080 | ~132k |
 
-- **Zero vs learned door: ≤1% text cost.** The learned input projection adds almost nothing
-  the signal didn't already carry.
-- **Zero vs standard learned byte embedding: +0.37 text bpb, +1.0 caption bpb in zero's
-  favor** at equal budget — the frozen substrate beats 132k trained parameters at the door.
+- **It works.** With nothing to train at the door, the model trains normally and lands
+  within 1% of a learned input projection — the signal already carries what the learned
+  door would otherwise have to learn.
+- At equal budget, the standard learned-byte-embedding arm measured 2.848 text bpb; the
+  substrate path reaches 2.483 with zero trained input parameters. We read this not as a
+  victory over embeddings but as a **possibility**: the lifting that embeddings are trained
+  to do can come from an exact, frozen signal description instead.
 - **Binding gap** = extra caption bits/byte when the in-window audio is swapped for a wrong
-  one (cross-modal grounding measure). Zero matches the learned door.
+  one (cross-modal grounding measure). The zero door preserves it.
 
-**Sequence halving holds quality — and flips the comparison.** With K=16 (16 bytes per
-attention slot — half the prefix positions, attention cost /4 on the input side):
+**Sequence halving holds quality.** With K=16 (16 bytes per attention slot — half the
+prefix positions, attention cost /4 on the input side):
 
 | K=16 front door | text bpb | caption bpb | binding gap |
 |---|---|---|---|
 | **zero** | 2.4815 | **1.4965** | **+0.042** |
 | learned projection | 2.4650 | 1.5398 | +0.031 |
 
-At K=16 zero is **ahead on caption and binding** (text within 0.7%) — the learned door's
-advantage shrinks as slots widen, while the zero door takes K up to 18 at dim 512
-**without adding a single parameter**. *(Trade-off, honestly: binding softens for both
-doors at K=16 vs K=8 — fine-grained cross-modal alignment prefers smaller slots.)*
+At K=16 the two doors are interchangeable on every metric (text within 0.7%) — and the
+zero door takes K up to 18 at dim 512 **without adding a single parameter**, while a
+learned projection grows with K. *(Trade-off, honestly: binding softens for both doors at
+K=16 vs K=8 — fine-grained cross-modal alignment prefers smaller slots.)*
+
+## The point
+
+Didn't we all want this direction — more capability per FLOP and per watt, not less?
+A byte front end with **nothing to train, nothing to store beyond a 4.6 KB table, no
+tokenizer pass, and sequence density as a free knob** is one concrete step that way.
+This is not a claim that embeddings are beaten; it is a measured demonstration that
+**a possibility now exists**, small enough for anyone to verify on one consumer GPU.
 
 ### Honest limits
 
