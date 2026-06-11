@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/hsl-embedding-zero.svg)](https://pypi.org/project/hsl-embedding-zero/)
 [![DOI](https://zenodo.org/badge/1266175250.svg)](https://doi.org/10.5281/zenodo.20643551)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Downloads](https://static.pepy.tech/badge/hsl-embedding-zero)](https://pepy.tech/project/hsl-embedding-zero)
 
 **Feed bytes to a transformer with ZERO learned input parameters.**
 
