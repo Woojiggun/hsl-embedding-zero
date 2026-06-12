@@ -11,6 +11,22 @@
 pip install hsl-embedding-zero
 ```
 
+> To our knowledge, HoLo-ZeRo is the first **public** Transformer input substrate with **zero learned
+> input parameters** that nevertheless runs on sequences **shorter than raw byte-position models** —
+> reversing the sequence-length explosion of prior embedding-free byte models via K-byte packing over
+> deterministic signal-density features.
+
+**Prior-art boundary (the claim is the combination, not any single property):**
+- *Not* the first embedding-free byte model — fixed one-hot byte inputs were done in
+  [Shaham & Levy, NAACL 2021](https://aclanthology.org/2021.naacl-main.17/) (but at raw byte-position length).
+- *Not* the first tokenizer-free / byte-patching model — [ByT5](https://arxiv.org/abs/2105.13626),
+  [Charformer](https://arxiv.org/abs/2106.12672), [MEGABYTE](https://arxiv.org/abs/2305.07185),
+  [BLT](https://arxiv.org/abs/2412.09871) all shorten byte sequences (but with *learned* embeddings /
+  downsamplers / patch encoders).
+- **The novelty is the combination:** zero learned input parameters **+** K-byte-packed signal substrate
+  **+** shorter-than-byte-position input. No prior work occupies both halves at once. This is a
+  **deployable proof-of-concept** (`pip install` above), not a production or superiority claim.
+
 ```python
 import torch
 from hsl_embedding_zero import ZeroInput
